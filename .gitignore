@@ -40,8 +40,7 @@ conda/
 .ipynb_checkpoints
 
 # Data files
-*.pth
-*.pt
+
 *.bin
 *.h5
 *.pkl

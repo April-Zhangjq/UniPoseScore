@@ -63,7 +63,7 @@ python main.py optimize \
 - `score_results.csv`: Scoring results(predicted RMSD)
 - `optimized_final.mol2/`: Refined conformations
 - `optimized_summary.txt/`: Predicted RMSD before and after refinement
-
+ 
 ## Example Data
 See `./examples/1h22/` for sample files.
 
