@@ -30,8 +30,8 @@ python main.py score \
   --output_dir ./test_output/1h22
 ```
 
-### 2. Optimization
-Optimize ligand conformation:
+### 2. Refinement
+Refine ligand conformation:
 
 ```bash
 python main.py optimize \
@@ -49,20 +49,21 @@ python main.py optimize \
 - `--ligand_mol2`: Ligand structure file (.mol2) - single or multiple
 - `--output_dir`: Output directory
 
-## Optional Arguments (optimize only)
-- `--max_cycles`: Maximum optimization cycles (default: 10)
-- `--early_stop_threshold`: Early Stop threshold (default: 0.001)
+## Optional Arguments (refinement only)
+- `--max_cycles`: Maximum refinement cycles (default: 10)
+- `--early_stop_threshold`: Early stop threshold (default: 0.001)
 
 ## Input Format
 - Protein: PDB format
 - Ligand: MOL2 format
   - For **scoring**: Can contain single or multiple poses
-  - For **optimization**: Must contain only a single pose
-  
-## Output
-- `score_results.csv`: Scoring results
-- `optimized_structures/`: Optimized conformations
+  - For **refinement**: Must contain only a single pose
 
+## Output
+- `score_results.csv`: Scoring results(predicted RMSD)
+- `optimized_final.mol2/`: Refined conformations
+- `optimized_summary.txt/`: Predicted RMSD before and after refinement
+ 
 ## Example Data
 See `./examples/1h22/` for sample files.
 
