@@ -7,6 +7,13 @@ UniPoseScore: A Unified Graphormer3D-based Framework for Protein–Ligand Bindin
 pip install -r requirements.txt
 ```
 
+## Download the network weights
+```bash
+cd core/
+wget http://yanglab.qd.sdu.edu.cn/UniPoseScore/download/model.tar.gz
+tar -xvzf model.tar.gz
+```
+
 ## Quick Start
 
 ### 1. Scoring

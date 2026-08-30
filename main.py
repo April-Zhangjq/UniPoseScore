@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Graphormer-PL: 蛋白质-配体复合物评分与构象优化工具
-统一入口，提供 `score` 和 `optimize` 两种模式。
+ 蛋白质-配体复合物评分与构象优化
+提供 `score` 和 `optimize` 两种模式。
 """
 
 import argparse
@@ -209,7 +209,7 @@ def run_optimize_mode(args):
         early_stop_threshold=args.early_stop_threshold
     )
     
-    # 输出简洁结果
+    # 输出结果
     print(f"\n[3/3] 优化完成!")
     print(f"{'='*60}")
     print("优化结果摘要:")
@@ -219,7 +219,7 @@ def run_optimize_mode(args):
     print(f"  优化循环数: {n_cycles}")
     print(f"{'='*60}")
     
-    # 保存简单的结果文件
+    # 保存结果文件
     result_file = os.path.join(args.output_dir, "optimization_summary.txt")
     with open(result_file, 'w') as f:
         f.write("优化结果\n")
@@ -238,19 +238,18 @@ def main():
         epilog="""
 使用示例:
   # 1. 仅评分模式
-  python graphormer_pl.py score \\
+  python main.py score \\
     --model_path /path/to/model.pth \\
     --protein_pdb /path/to/protein.pdb \\
     --ligand_mol2 /path/to/ligand.mol2 \\
-    --output_dir ./my_score_results
+    --output_dir ./test_output
 
   # 2. 构象优化模式
-  python graphormer_pl.py optimize \\
+  python main.py optimize \\
     --model_path /path/to/model.pth \\
     --protein_pdb /path/to/protein.pdb \\
     --ligand_mol2 /path/to/initial_pose.mol2 \\
-    --output_dir ./my_opt_results \\
-    --max_cycles 10
+    --output_dir ./test_output \\
         """
     )
 
