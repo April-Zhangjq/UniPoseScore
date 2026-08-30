@@ -28,7 +28,7 @@ class GraphormerPredictor:
                 pos = batch['pos'].to(self.device)
                 real_mask = ~batch['padding_mask'].to(self.device)
 
-                rmsd_pred, displacements_pred = self.model(
+                rmsd_pred, displacements_pred, _ = self.model(
                     atoms=atoms,
                     tags=tags,
                     pos=pos,
