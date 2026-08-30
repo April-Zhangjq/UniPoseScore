@@ -126,6 +126,28 @@ class NodeTaskHead(nn.Module):
         f3 = self.force_proj3(x[:, :, 2, :]).squeeze(-1)
         return torch.stack([f1, f2, f3], dim=-1)
 
+
+# ===================== 【新增：置信度预测头】 =====================
+class ConfidenceHead(nn.Module):
+    """
+    预测位移向量的可靠性
+    输出：每个残基/原子的置信度分数 0~1
+    """
+    def __init__(self, embed_dim):
+        super().__init__()
+        self.norm = nn.LayerNorm(embed_dim)
+        self.proj = nn.Sequential(
+            nn.Linear(embed_dim, embed_dim // 2),
+            nn.GELU(),
+            nn.Linear(embed_dim // 2, 1),
+            nn.Sigmoid()  # 输出 0~1
+        )
+
+    def forward(self, node_embeddings):
+        x = self.norm(node_embeddings)
+        return self.proj(x)  # [bsz, n_node, 1]
+
+
 class Graphormer3D(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -157,14 +179,16 @@ class Graphormer3D(nn.Module):
 
         # Output Heads
         self.final_ln = nn.LayerNorm(config.embed_dim)
-        self.rmsd_proj = nn.Sequential(
+        self.energy_proj = nn.Sequential(
             nn.Linear(config.embed_dim, config.embed_dim),
             nn.GELU(),
             nn.Linear(config.embed_dim, 1)
         )
-        self.rmsd_weights = nn.Embedding(3, 1)
-        nn.init.normal_(self.rmsd_weights.weight, 0, 0.01)
+        self.energy_weights = nn.Embedding(3, 1)
+        nn.init.normal_(self.energy_weights.weight, 0, 0.01)
         self.node_head = NodeTaskHead(config.embed_dim, config.num_heads)
+        # ===================== 【新增：置信度头】 =====================
+        self.confidence_head = ConfidenceHead(config.embed_dim)
 
     def forward(self, atoms, tags, pos, real_mask):
         # Geometry Features
@@ -194,10 +218,14 @@ class Graphormer3D(nn.Module):
             x = layer(x, attn_bias)
         x = self.final_ln(x).transpose(0, 1)
 
-        # rmsd Prediction
-        pred_rmsd = self.rmsd_proj(x) * self.rmsd_weights(tags)
+        # Energy Prediction
+        pred_rmsd = self.energy_proj(x) * self.energy_weights(tags)
         pred_rmsd = pred_rmsd.masked_fill(~real_mask.unsqueeze(-1), 0).sum(dim=1)
 
         # Node Displacements
         node_displacements = self.node_head(x, attn_bias, dir_vec)
-        return pred_rmsd, node_displacements
+
+        # ===================== 【新增：输出置信度】 =====================
+        confidence = self.confidence_head(x)
+
+        return pred_rmsd, node_displacements, confidence
