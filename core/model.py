@@ -179,13 +179,13 @@ class Graphormer3D(nn.Module):
 
         # Output Heads
         self.final_ln = nn.LayerNorm(config.embed_dim)
-        self.energy_proj = nn.Sequential(
+        self.rmsd_proj = nn.Sequential(
             nn.Linear(config.embed_dim, config.embed_dim),
             nn.GELU(),
             nn.Linear(config.embed_dim, 1)
         )
-        self.energy_weights = nn.Embedding(3, 1)
-        nn.init.normal_(self.energy_weights.weight, 0, 0.01)
+        self.rmsd_weights = nn.Embedding(3, 1)
+        nn.init.normal_(self.rmsd_weights.weight, 0, 0.01)
         self.node_head = NodeTaskHead(config.embed_dim, config.num_heads)
         # ===================== 【新增：置信度头】 =====================
         self.confidence_head = ConfidenceHead(config.embed_dim)
@@ -218,8 +218,8 @@ class Graphormer3D(nn.Module):
             x = layer(x, attn_bias)
         x = self.final_ln(x).transpose(0, 1)
 
-        # Energy Prediction
-        pred_rmsd = self.energy_proj(x) * self.energy_weights(tags)
+        # RMSD Prediction
+        pred_rmsd = self.rmsd_proj(x) * self.rmsd_weights(tags)
         pred_rmsd = pred_rmsd.masked_fill(~real_mask.unsqueeze(-1), 0).sum(dim=1)
 
         # Node Displacements

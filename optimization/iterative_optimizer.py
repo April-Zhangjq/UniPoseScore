@@ -36,7 +36,7 @@ class IterativeGraphormerOptimizer:
             real_mask = torch.ones(1, n_atoms, dtype=torch.bool, device=self.device)
             
             with torch.no_grad():
-                energy_pred, displacements_pred, confidence_pred = self.predictor.model(
+                rmsd_pred, displacements_pred, confidence_pred = self.predictor.model(
                     atoms=atoms,
                     tags=tags,
                     pos=pos,
@@ -57,7 +57,7 @@ class IterativeGraphormerOptimizer:
                     )
                     displacements_pred = torch.cat([displacements_pred, padding], dim=1)
 
-            return energy_pred.item(), displacements_pred.squeeze(0).cpu().numpy(), features, confidence_pred.squeeze(0).cpu().numpy()
+            return rmsd_pred.item(), displacements_pred.squeeze(0).cpu().numpy(), features, confidence_pred.squeeze(0).cpu().numpy()
             
         except Exception as e:
             print(f"预测失败: {e}")
