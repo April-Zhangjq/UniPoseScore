@@ -50,7 +50,7 @@ def setup_optimize_parser(subparsers):
                            help='待优化的配体初始构象文件路径 (.mol2)')
     parser_opt.add_argument("--output_dir", type=str, default="./test_output",
                            help='优化结果输出目录')
-    parser_opt.add_argument("--max_cycles", type=int, default=10,
+    parser_opt.add_argument("--max_cycles", type=int, default=20,
                            help='最大优化循环次数')
     parser_opt.add_argument("--max_iterations_per_cycle", type=int, default=100,
                            help='每个优化循环内的最大迭代次数')

@@ -13,6 +13,7 @@ cd core/
 wget http://yanglab.qd.sdu.edu.cn/UniPoseScore/download/model.tar.gz
 tar -xvzf model.tar.gz
 ```
+> Note: Use a checkpoint that contains the `confidence_head` weights. Old checkpoints (without `confidence_head`) are incompatible with the current code and will fail to load.
 
 ## Quick Start
 
@@ -46,7 +47,7 @@ python main.py optimize \
   --protein_pdb ./examples/1h22/1h22_protein.pdb \
   --ligand_mol2 ./examples/1h22/1h22_1.mol2 \
   --output_dir ./test_output/1h22_1 \
-  --max_cycles 10 \
+  --max_cycles 20 \
   --max_iterations_per_cycle 100 \
   --early_stop_threshold 0.001
 ```
@@ -61,7 +62,7 @@ python main.py optimize \
 - `--max_cycles`: Maximum refinement cycles (default: 20)
 - `--max_iterations_per_cycle`: Maximum iterations per refinement cycle (default: 100)
 - `--early_stop_threshold`: Early stop threshold on RMSD change (default: 0.001)
-- Confidence-based early stop: hard-coded threshold 0.35 (mean confidence); printed during run
+
 
 ## Input Format
 - Protein: PDB format
