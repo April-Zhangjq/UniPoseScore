@@ -36,28 +36,28 @@ class IterativeGraphormerOptimizer:
             real_mask = torch.ones(1, n_atoms, dtype=torch.bool, device=self.device)
             
             with torch.no_grad():
-                energy_pred, displacements_pred = self.predictor.model(
+                energy_pred, displacements_pred, confidence_pred = self.predictor.model(
                     atoms=atoms,
                     tags=tags,
                     pos=pos,
                     real_mask=real_mask
                 )
-            
+
             # 提取配体位移
             n_ligand_atoms = torch.sum(features['tags'] == 1).item()
             if displacements_pred.shape[1] != n_ligand_atoms:
                 if displacements_pred.shape[1] > n_ligand_atoms:
-                    displacements_pred = displacements_pred[:, :n_ligand_atoms, :]
+                    displacements_pred = displacements_pred[:, :n_ligand_atoms]
                 else:
                     padding = torch.zeros(
-                        displacements_pred.shape[0], 
+                        displacements_pred.shape[0],
                         n_ligand_atoms - displacements_pred.shape[1],
                         displacements_pred.shape[2],
                         device=displacements_pred.device
                     )
                     displacements_pred = torch.cat([displacements_pred, padding], dim=1)
-            
-            return energy_pred.item(), displacements_pred.squeeze(0).cpu().numpy(), features
+
+            return energy_pred.item(), displacements_pred.squeeze(0).cpu().numpy(), features, confidence_pred.squeeze(0).cpu().numpy()
             
         except Exception as e:
             print(f"预测失败: {e}")
@@ -149,7 +149,7 @@ class IterativeGraphormerOptimizer:
             # 计算初始结构RMSD
             print("计算初始预测RMSD...")
             try:
-                initial_pred_rmsd, initial_displacements, _ = self.predict_for_structure(
+                initial_pred_rmsd, initial_displacements, _, _ = self.predict_for_structure(
                     current_input, receptor_pdb, "initial"
                 )
                 print(f"初始预测RMSD: {initial_pred_rmsd:.3f}Å")
@@ -184,10 +184,20 @@ class IterativeGraphormerOptimizer:
                 # 预测优化后结构的RMSD
                 print("  预测优化后结构...")
                 try:
-                    optimized_pred, optimized_displacements, _ = self.predict_for_structure(
+                    optimized_pred, optimized_displacements, _, confidence_pred = self.predict_for_structure(
                         current_output, receptor_pdb, f"cycle_{cycle}"
                     )
                     print(f"  优化后预测RMSD: {optimized_pred:.3f}Å")
+
+                    # 计算平均置信度并检查阈值
+                    mean_confidence = float(np.mean(confidence_pred))
+                    print(f"  平均置信度: {mean_confidence:.3f}")
+
+                    # 置信度阈值检查
+                    confidence_threshold = 0.35
+                    if mean_confidence < confidence_threshold:
+                        print(f"  置信度过低 ({mean_confidence:.3f} < {confidence_threshold}), 停止迭代")
+                        break
                 except Exception as e:
                     print(f"  预测优化后结构失败: {e}")
                     break
